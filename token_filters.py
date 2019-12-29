@@ -1,5 +1,4 @@
 import string
-import re
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
@@ -8,32 +7,22 @@ def remove_punctuations(tokens):
     return [t for t in tokens if t not in string.punctuation]
 
 
+retain_stops = {'i', 'me', 'my', 'myself', 'you', 'your', 'yours', 'yourself', 'he', 'him', 'his', 'himself', 'ma'}
+stop_words = set(stopwords.words('english')).difference(retain_stops)
+cap_stop_words = [word.capitalize() for word in stop_words]
+
+
 def remove_stopwords(words):
-    stop_words = set(stopwords.words('english'))
-    return [w for w in words if w not in stop_words]
+    lower_stops_removed = [w for w in words if w not in stop_words]
+    all_stops_removed = [w for w in lower_stops_removed if w not in cap_stop_words]
+    return all_stops_removed
 
 
 def text_to_words_without_stopwords(text):
     return remove_stopwords(remove_punctuations(tokenize(text)))
 
 
-def lower_first_char_and_join(sentence_list):
-    joined_text = ''
-    for sentence in sentence_list:
-        sentence = sentence.strip()
-        if len(sentence) > 0:
-            """Remove initial caps"""
-            sentence = sentence[0].lower() + sentence[1:]
-            joined_text += sentence + ' '
-    return joined_text
-
-
 def tokenize(text):
-    sentence_starters = '?!\'\"'
-    for starter in sentence_starters:
-        text = text.replace(starter, '.')
-    sentence_list = text.split('.')
-    text = lower_first_char_and_join(sentence_list)
     return word_tokenize(text)
 
 
