@@ -1,16 +1,12 @@
-import in_para_allcontent
+import json
 import gita_encode
-import decoder
-import counter
-
+import in_para_allcontent
+import writers
 
 docx_as_dict = gita_encode.encode_doc('GitaBhashya-try.docx')
+with open('GitaBhashya-try-encoding.json', 'w') as encoded_file:
+    json.dump(docx_as_dict, encoded_file, indent=2)
+    print("Wrote the encoding to GitaBhashya-try-encoding.json")
+
 paras = in_para_allcontent.paralist(docx_as_dict)
-
-text = ''
-for para in paras:
-    if para["style"].lower() != 'shloka':
-        text += decoder.text_with_phrases(in_para_allcontent.contentlist(para)) + ' '
-
-word_counts = counter.count_significant_words(text)
-counter.write_as_csv('GitaBhashya-try.csv', word_counts)
+writers.write_overall_word_counts(paras)
