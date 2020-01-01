@@ -10,3 +10,4 @@ with open('GitaBhashya-try-encoding.json', 'w') as encoded_file:
 
 paras = in_para_allcontent.paralist(docx_as_dict)
 writers.write_overall_word_counts(paras)
+writers.write_chapter_wordmap(paras)

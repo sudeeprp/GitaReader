@@ -21,7 +21,7 @@ def count_significant_words(text):
     return count_words(filters.significant_words(text))
 
 
-def write_as_csv(filename, word_count_pairs):
+def write_wordcounts_as_csv(filename, word_count_pairs):
     word_count_pairs.sort(key=lambda x: x[1], reverse=True)
     with open(filename, 'w', encoding='utf-8') as output_file:
         for word_count_pair in word_count_pairs:

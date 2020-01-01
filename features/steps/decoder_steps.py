@@ -16,7 +16,8 @@ def step_impl(context):
 
 @when('the counter asks the decoder for text with phrases')
 def step_impl(context):
-    context.decode_pack['decoder_output'] = decoder.text_with_phrases(context.decode_pack['decoder_input'])
+    context.decode_pack['decoder_output'] = \
+        decoder.text_with_phrases(context.decode_pack['decoder_input'])
 
 
 @then('the decoder returns a string with words and phrases')
