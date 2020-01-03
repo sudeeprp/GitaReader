@@ -20,8 +20,21 @@ def step_impl(context):
         decoder.text_with_phrases(context.decode_pack['decoder_input'])
 
 
+@when('the counter asks the decoder for text with content')
+def step_impl(context):
+    context.decode_pack['decoder_output'] = \
+        decoder.text_content(context.decode_pack['decoder_input'])
+
+
 @then('the decoder returns a string with words and phrases')
 def step_impl(context):
     decoder_output = context.decode_pack['decoder_output']
     assert decoder_output == "Our skill lies in karmayOga_a_defn and it's a beautiful thing.",\
+                             f"decoder output is >{decoder_output}<"
+
+
+@then('the decoder returns a string with words')
+def step_impl(context):
+    decoder_output = context.decode_pack['decoder_output']
+    assert decoder_output == "Our skill lies in working without attachment and it's a beautiful thing.",\
                              f"decoder output is >{decoder_output}<"

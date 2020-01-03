@@ -8,3 +8,10 @@ def text_with_phrases(contentlist):
         else:
             text += content["content"]
     return text
+
+
+def text_content(contentlist):
+    text = ''
+    for content in contentlist:
+        text += content["content"]
+    return text
