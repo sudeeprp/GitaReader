@@ -21,8 +21,11 @@ def count_significant_words(text):
     return count_words(filters.significant_words(text))
 
 
-def write_wordcounts_as_csv(filename, word_count_pairs):
-    word_count_pairs.sort(key=lambda x: x[1], reverse=True)
-    with open(filename, 'w', encoding='utf-8') as output_file:
-        for word_count_pair in word_count_pairs:
-            output_file.write(str(word_count_pair[0]) + ',' + str(word_count_pair[1]) + '\n')
+def chapter_wordcounts_to_heatmap(chapter_wordcounts):
+    chapter_cols = chapter_wordcounts.columns
+    chapter_wordcounts['Total'] = chapter_wordcounts.sum(axis=1)
+    for chapter in chapter_cols:
+        chapter_wordcounts[chapter] /= chapter_wordcounts['Total']
+        chapter_wordcounts[chapter] *= 100
+    chapter_wordcounts.sort_values(by='Total', ascending=False, inplace=True)
+    return chapter_wordcounts
