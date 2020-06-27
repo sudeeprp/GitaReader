@@ -17,7 +17,8 @@ class TransliterationCase(unittest.TestCase):
             "bhunktE": "भुङ्क्ते",
             "saMjnai": "संज्ञै",
             "sO_mr`tatvAya": "सोऽमृतत्वाय",
-            "yajna": "यज्ञ"
+            "yajna": "यज्ञ",
+            "swadharmE": "स्वधर्मे"
         }
         for transliterated in expected_mapping:
             self.assertEqual(expected_mapping[transliterated],
