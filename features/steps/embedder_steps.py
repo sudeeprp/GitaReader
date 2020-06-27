@@ -24,7 +24,7 @@ def step_impl(context):
 
 @given("the text")
 def step_impl(context):
-    context.para = context.para = make_para_with_text(context.text)
+    context.para = make_para_with_text(context.text)
 
 
 @given("we consider tokens starting with {prefix} to be similar")
