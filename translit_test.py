@@ -3,7 +3,7 @@ import translit
 
 
 class TransliterationCase(unittest.TestCase):
-    def test_HK_is_converted(self):
+    def test_Gita_is_converted_to_devanagari(self):
         expected_mapping = {
             "siddhayE": "सिद्धये",
             "sanga": "सङ्ग",
@@ -22,7 +22,7 @@ class TransliterationCase(unittest.TestCase):
         }
         for transliterated in expected_mapping:
             self.assertEqual(expected_mapping[transliterated],
-                             translit.to_devanagari(transliterated))
+                             translit.gita_to_devanagari(transliterated))
 
 
 if __name__ == '__main__':

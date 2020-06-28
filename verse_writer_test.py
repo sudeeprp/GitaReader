@@ -1,11 +1,20 @@
+import re
 import unittest
 import verse_writer
 
 
+def phrases_are_in_sequence(sequence, string_under_test):
+    return re.search('.*'.join(sequence), string_under_test)
+
+
+def phrase_is_in_style(string_under_test, phrase, style):
+    return phrases_are_in_sequence(['span', style, phrase, '/span'], string_under_test)
+
+
 class VerseMakerTests(unittest.TestCase):
     def test_shlokas_are_formed_in_two_lines(self):
-        first_line = 'first line|'
-        second_line = 'second line||'
+        first_line = 'om namo |'
+        second_line = 'nArAyaNAya ||'
         paras = [{
           "shloka": "2-18",
           "content": [{"content": "["}],
@@ -22,17 +31,23 @@ class VerseMakerTests(unittest.TestCase):
         content = verse_writer.blank_content()
         for i in range(len(paras)):
             content = verse_writer.form_presentable(paras, i, content)
-        self.assertTrue(first_line in content['shloka'])
-        self.assertTrue(second_line in content['shloka'])
+        self.assertEqual(f'{first_line}<br>{second_line}', content['shloka'])
+        self.assertEqual('ओम् नमो ।<br>नारायणाय ॥', content["devanagri"])
 
-    def test_translation_is_filled(self):
+    def test_translation_is_styled_in_english_and_devanagari(self):
+        translation = "[aham] I [asmi] am"
         paras = [{
           "shloka": "2-18",
-          "content": [{"content": "this is a translation"}],
+          "content": [{"content": translation}],
           "style": "explnofshloka"
         }]
         content = verse_writer.form_presentable(paras, 0, verse_writer.blank_content())
-        self.assertGreater(len(content['translation']), 1)
+        styled_translation = content["translation"]
+        self.assertTrue(phrases_are_in_sequence(translation.split(), styled_translation))
+        self.assertTrue(phrase_is_in_style(styled_translation, "[aham]", 'transliteration'))
+        self.assertTrue(phrase_is_in_style(styled_translation, "[अहम्]", 'sanskrit'))
+        self.assertTrue(phrase_is_in_style(styled_translation, "[asmi]", 'transliteration'))
+        self.assertTrue(phrase_is_in_style(styled_translation, "[अस्मि]", 'sanskrit'))
 
     def test_2d_insights_is_filled(self):
         paras = [{

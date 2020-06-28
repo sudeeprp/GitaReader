@@ -1,3 +1,4 @@
+import re
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import transliterate
 
@@ -28,6 +29,9 @@ def to_harward_kyoto(gita_transliteration):
     return gita_transliteration
 
 
-def to_devanagari(gita_transliteration):
+def gita_to_devanagari(gita_transliteration):
     hk_translit = to_harward_kyoto(gita_transliteration)
-    return transliterate(hk_translit, sanscript.HK, sanscript.DEVANAGARI)
+    devanagari = transliterate(hk_translit, sanscript.HK, sanscript.DEVANAGARI)
+    if re.search(r'[\x00-\x19\x22-\x2C\x2E-\x7F]+', devanagari): # space, !, - allowed
+        print(f"WARNING: {gita_transliteration} translated to {devanagari}")
+    return devanagari

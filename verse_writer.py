@@ -1,5 +1,6 @@
 from copy import deepcopy
 import json
+import re
 import gita_encode
 import translit
 
@@ -20,26 +21,55 @@ def init_blank_insight_if_empty(content):
     return content
 
 
-def joiner(previous_text):
+def delimiter_for_join(previous_text):
     joiner_text = ""
-    if previous_text.strip().endswith('.'):
+    text_to_check = previous_text.strip()
+    if len(text_to_check) > 0 and text_to_check[-1] in '.|।॥':
         joiner_text = '<br>'
     return joiner_text
 
 
+def fill_shlokahead_from_para(para, content):
+    if "shloka" in para:
+        content["book-keep"]["shlokahead"] = para["shloka"]
+    return content
+
+
+def fill_chapterhead_from_para(para, content):
+    if "chapter" in para:
+        content["book-keep"]["chapterhead"] = para["chapter"].replace('Chapter', 'Ch')
+    return content
+
+
+def span(style_name, readable):
+    return f"<span class='{style_name}'>[{readable}]</span>"
+
+
+def style_translits(text_to_style):
+    styled = ''
+    tokens_in_xlat = re.split(r'(\[[^\[]+\])', text_to_style)
+    for token in tokens_in_xlat:
+        if token.startswith('['):
+            token = token[1:-1]
+            token = span('transliteration', token) +\
+                    span('sanskrit', translit.gita_to_devanagari(token))
+        styled += token
+    return styled
+
+
 def shloka_filler(element, content):
     text_in_shloka = element["content"]
-    if len(text_in_shloka) > 1:
-        content["shloka"] += text_in_shloka + '<br>'
-        content["devanagri"] = translit.to_devanagari(content["shloka"])
+    if len(text_in_shloka) > 1:     # to avoid the single "["
+        content["shloka"] += delimiter_for_join(content["shloka"]) +\
+                             text_in_shloka
+        content["devanagri"] += delimiter_for_join(content["devanagri"]) +\
+                               translit.gita_to_devanagari(text_in_shloka)
     return content
 
 
 def translation_filler(element, content):
-    text_in_translation = joiner(content["translation"])
-    text_in_translation += element["content"]
-    text_in_translation = text_in_translation.replace('[', "<span class='transliteration'>[")
-    text_in_translation = text_in_translation.replace(']', "]</span>")
+    text_in_translation = delimiter_for_join(content["translation"])
+    text_in_translation += style_translits(element["content"])
     content["translation"] += text_in_translation
     return content
 
@@ -54,7 +84,7 @@ def notes_filler(element, content):
 def commentary_filler(element, content):
     content = init_blank_insight_if_empty(content)
     existing_commentary = content["insights"][-1][1]
-    text_in_commentary = joiner(existing_commentary)
+    text_in_commentary = delimiter_for_join(existing_commentary)
     text_in_commentary += element["content"]
     content["insights"][-1][1] += text_in_commentary
     return content
@@ -74,7 +104,8 @@ def form_presentable(paras, i, content):
         filler = FILLER_MAP[para_style]
         for element in paras[i]["content"]:
             content = filler(element, content)
-    content["book-keep"]["shlokahead"] = paras[i]["shloka"]
+    content = fill_shlokahead_from_para(paras[i], content)
+    content = fill_chapterhead_from_para(paras[i], content)
     return content
 
 
@@ -94,7 +125,7 @@ def extract_verses(docx_as_dict):
         if len(content["shloka"]) > 0:
             verses.append({
                 "id": "*",
-                "chapter": "Chapter *",
+                "chapter": content["book-keep"]["chapterhead"],
                 "shloka": content["book-keep"]["shlokahead"],
                 "style": "shloka",
                 "type": "text",
