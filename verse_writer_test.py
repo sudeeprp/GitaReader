@@ -119,6 +119,33 @@ class VerseMakerTests(unittest.TestCase):
         }]
         self.assertFalse(verse_writer.content_boundary(paras, 0))
 
+    def test_insight_is_carried_to_next_shloka(self):
+        docx = {
+            "paragraphs": [{
+              "shloka": "2-18",
+              "chapter": "Ch 2",
+              "content": [{"content": "the shloka 18"}],
+              "style": "shloka"
+            }, {
+              "shloka": "2-18",
+              "chapter": "Ch 2",
+              "content": [{"content": "the insight"}],
+              "style": "applnotes"
+            }, {
+              "shloka": "2-19",
+              "chapter": "Ch 2",
+              "content": [{"content": "the shloka 19"}],
+              "style": "shloka"
+            }, {
+                "shloka": "2-19",
+                "chapter": "Ch 2",
+                "content": [{"content": "content after the insight"}],
+                "style": "normal"
+            }]
+        }
+        verse_collection = verse_writer.extract_verses(docx)
+        self.assertEqual("the insight", verse_collection["Verses"][1]["content"]["insights"][0][0])
+
 
 if __name__ == '__main__':
     unittest.main()

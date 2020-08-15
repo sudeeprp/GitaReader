@@ -15,16 +15,25 @@ def blank_content():
     }
 
 
+def initial_content(init_material):
+    initial = blank_content()
+    initial.update(init_material)
+    return initial
+
+
 def init_blank_insight_if_empty(content):
     if len(content["insights"]) == 0:
-        content["insights"] = [["", ""]]
+        last_insight = ""
+        if "lastinsight" in content["book-keep"]:
+            last_insight = content["book-keep"]["lastinsight"]
+        content["insights"] = [[last_insight, ""]]
     return content
 
 
 def delimiter_for_join(previous_text):
     joiner_text = ""
     text_to_check = previous_text.strip()
-    if len(text_to_check) > 0 and text_to_check[-1] in '.|।॥':
+    if len(text_to_check) > 0 and text_to_check[-1] in '.|।॥-':
         joiner_text = '<br>'
     return joiner_text
 
@@ -118,18 +127,24 @@ def content_boundary(paras, i):
     return found_boundary
 
 
+def extract_last_insight(content):
+    return content["book-keep"]["lastinsight"]
+
+
 def extract_verses(docx_as_dict):
     verses = []
 
     def add_to_verses(content):
         if len(content["shloka"]) > 0:
+            content_to_write = deepcopy(content)
+            del content_to_write["book-keep"]
             verses.append({
                 "id": "*",
                 "chapter": content["book-keep"]["chapterhead"],
                 "shloka": content["book-keep"]["shlokahead"],
                 "style": "shloka",
                 "type": "text",
-                "content": deepcopy(content)
+                "content": content_to_write
             })
 
     paras = docx_as_dict['paragraphs']
@@ -137,8 +152,9 @@ def extract_verses(docx_as_dict):
     for i in range(len(paras)):
         content = form_presentable(paras, i, content)
         if content_boundary(paras, i):
+            last_insight = extract_last_insight(content)
             add_to_verses(content)
-            content = blank_content()
+            content = initial_content({"book-keep": {"lastinsight": last_insight}})
     return {"Verses": verses}
 
 
