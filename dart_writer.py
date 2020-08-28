@@ -3,13 +3,28 @@ import json
 import re
 import gita_encode
 import translit
+from json import encoder
+
+
+def write_head(dart_file):
+    head_contents = '''
+import 'contents.dart';
+Contents gitaContents = Contents(ContentStructure('Chapter', 'Shloka', ''),
+<GulpableUnit>[
+'''
+    dart_file.write(head_contents)
+
+
+def write_tail(dart_file):
+    tail_contents = ']'
+    dart_file.write(tail_contents)
 
 
 def blank_content():
     return {
         "devanagri": "",
         "shloka": "",
-        "translation": "",
+        "translation": [],
         "insights": [],
         "book-keep": {}
     }
@@ -34,7 +49,7 @@ def delimiter_for_join(previous_text):
     joiner_text = ""
     text_to_check = previous_text.strip()
     if len(text_to_check) > 0 and text_to_check[-1] in '.|।॥-':
-        joiner_text = '<br>'
+        joiner_text = '\n'
     return joiner_text
 
 
@@ -50,20 +65,24 @@ def fill_chapterhead_from_para(para, content):
     return content
 
 
-def span(style_name, readable):
-    return f"<span class='{style_name}'>[{readable}]</span>"
+def filter_blanks(tokens):
+    return [t for t in tokens if t]
 
 
-def style_translits(text_to_style):
-    styled = ''
+def tokenize_translits(text_to_style):
+    translits = []
+    translation = {}
     tokens_in_xlat = re.split(r'(\[[^\[]+\])', text_to_style)
-    for token in tokens_in_xlat:
+    for token in filter_blanks(tokens_in_xlat):
         if token.startswith('['):
             token = token[1:-1]
-            token = span('transliteration', token) +\
-                    span('sanskrit', translit.gita_to_devanagari(token))
-        styled += token
-    return styled
+            translation['english'] = token
+            translation['sanskrit'] = translit.gita_to_devanagari(token)
+        else:
+            translation['translate'] = token
+            translits.append(translation)
+            translation = {}
+    return translits
 
 
 def shloka_filler(element, content):
@@ -77,9 +96,7 @@ def shloka_filler(element, content):
 
 
 def translation_filler(element, content):
-    text_in_translation = delimiter_for_join(content["translation"])
-    text_in_translation += style_translits(element["content"])
-    content["translation"] += text_in_translation
+    content["translation"].extend(tokenize_translits(element["content"]))
     return content
 
 
@@ -131,21 +148,48 @@ def extract_last_insight(content):
     return content["book-keep"]["lastinsight"]
 
 
-def extract_verses(docx_as_dict):
+def present_text(type, text):
+    return f"  Presentable.text('{type}', {encoder.encode_basestring_ascii(text)}),\n"
+
+
+def write_dart(oneshloka, dart_file):
+    dart_file.write("GulpableUnit(\n")
+    dart_file.write(f"<String>['{oneshloka['chapter']}', '{oneshloka['shloka']}'],\n")
+    dart_file.write("Presentable.parent('shloka', <Presentable>[\n")
+    dart_file.write("Presentable.parent('shlokaScript', <Presentable>[\n")
+    dart_file.write(present_text('dvngr', oneshloka['content']['devanagri']))
+    dart_file.write(present_text('ascii', oneshloka['content']['shloka']))
+    dart_file.write("]),\n")
+    dart_file.write("Presentable.parent('translation', <Presentable>[\n")
+    for translation in oneshloka['content']['translation']:
+        dart_file.write(present_text('english', translation['english']))
+        dart_file.write(present_text('sanskrit', translation['sanskrit']))
+        dart_file.write(present_text('translate', translation['translate']))
+    dart_file.write("]),\n")
+    dart_file.write("Presentable.parent('commentary', <Presentable>[\n")
+    for insight_commentary in oneshloka['content']['insights']:
+        dart_file.write(present_text('insight', insight_commentary[0]))
+        dart_file.write(present_text('explanation', insight_commentary[1]))
+    dart_file.write("]),\n")
+    dart_file.write("]),\n")
+    dart_file.write("),\n")
+
+
+def extract_verses(docx_as_dict, dart_file):
     verses = []
 
     def add_to_verses(content):
         if len(content["shloka"]) > 0:
             content_to_write = deepcopy(content)
             del content_to_write["book-keep"]
-            verses.append({
+            write_dart({
                 "id": "*",
                 "chapter": content["book-keep"]["chapterhead"],
                 "shloka": content["book-keep"]["shlokahead"],
                 "style": "shloka",
                 "type": "text",
                 "content": content_to_write
-            })
+            }, dart_file)
 
     paras = docx_as_dict['paragraphs']
     content = blank_content()
@@ -160,7 +204,7 @@ def extract_verses(docx_as_dict):
 
 if __name__ == '__main__':
     docx_as_dict = gita_encode.encode_doc('GitaBhashya-try.docx')
-    verse_json = extract_verses(docx_as_dict)
-    with open('verse.json', 'w') as verses_file:
-        json.dump(verse_json, verses_file, indent=2)
-        print("Wrote the verses to verse.json")
+    with open('verse.dart', 'w') as dart_file:
+        write_head(dart_file)
+        verse_json = extract_verses(docx_as_dict, dart_file)
+        write_tail(dart_file)
