@@ -3,10 +3,10 @@ from translit import gita_to_devanagari
 
 def mdcumulate(para_sequence):
   chapters = {}
-  def cumulate(chaptitle, paramd):
+  def cumulate(chaptitle, para_md):
     if chaptitle not in chapters:
       chapters[chaptitle] = ''
-    chapters[chaptitle] += paramd + '\n'
+    chapters[chaptitle] += para_md + '\n'
   for para in para_sequence:
     cumulate(para['chapter'], mdtext(para))
   return chapters
