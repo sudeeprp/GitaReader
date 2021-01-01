@@ -1,6 +1,6 @@
 import re
 import unittest
-import verse_writer
+import verse_json_writer as verse_writer
 
 
 def phrases_are_in_sequence(sequence, string_under_test):

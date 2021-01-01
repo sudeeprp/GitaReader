@@ -160,6 +160,9 @@ def extract_verses(docx_as_dict):
 
 if __name__ == '__main__':
     docx_as_dict = gita_encode.encode_doc('GitaBhashya-try.docx')
+    with open('paras.json', 'w') as docx_dict_file:
+        json.dump(docx_as_dict, docx_dict_file, indent=2)
+        print('Wrote docx to paras.json')
     verse_json = extract_verses(docx_as_dict)
     with open('verse.json', 'w') as verses_file:
         json.dump(verse_json, verses_file, indent=2)
