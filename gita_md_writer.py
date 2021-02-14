@@ -1,5 +1,5 @@
 import json
-from translit import gita_to_devanagari
+from contents2md import shlokaline_to_md, expln_to_meanings
 
 def mdcumulate(para_sequence):
   chapters = {}
@@ -23,20 +23,42 @@ def groupadja(para_sequence):
   return para_groups
 
 def mdtext(group):
-  md = ''
-  for para in group["paras"]:
-    md += content_to_md(para['content'], group['style'])
-    md += '\n'
-  return md
+  md_texts = [content_to_md(para['content'], group['style'])
+    for para in group["paras"]]
+  return compose_mds(md_texts, group['style'])
 
 def content_to_md(content, style):
   texts = [t['content'] for t in content if t['type'] == 'text']
-  convert_to_md = stylemapper[style]
-  return convert_to_md(texts[0])
+  try:
+    convert_to_md = style2mdtext[style]
+    return convert_to_md(texts[0])
+  except KeyError:
+    return ''
 
-stylemapper = {
-  "normal": lambda x: x,
-  "shloka": gita_to_devanagari,
-  "heading1": lambda x: f'# {x}',
-  "heading2": lambda x: f'## {x}'
+def compose_mds(md_texts, style):
+  if style in stylecomposer:
+    composer = stylecomposer[style]
+  else:
+    composer = stylecomposer[".default"]
+  return composer(md_texts)
+
+def compose_with_newlines(md_texts):
+  return '\n'.join(md_texts)
+
+def compose_with_newlines_and_a_gap(md_texts):
+  return compose_with_newlines(md_texts) + '\n'
+
+style2mdtext = {
+  "normal": lambda text: text,
+  "shloka": shlokaline_to_md,
+  "heading1": lambda text: f'# {text}',
+  "heading2": lambda text: f'## {text}',
+  "explnofshloka": expln_to_meanings
+}
+
+stylecomposer = {
+  ".default": compose_with_newlines,
+  "heading1": compose_with_newlines_and_a_gap,
+  "heading2": compose_with_newlines_and_a_gap,
+  "shloka": compose_with_newlines
 }

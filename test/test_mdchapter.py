@@ -43,6 +43,12 @@ sample_chapter_paras = [{
       "type": "text",
       "content": "tam tathA kr`payAviShTam ashrupUrNAkulEkShaNam |"
     }], "style": "shloka"
+  }, {
+    "chapter": "Chapter 2", "shloka": "2-1 to 2-3",
+    "content": [{
+      "type": "text",
+      "content": "[ththA] Then, [madhusUdhana:] Krishna [idam vAkyam uvAcha] said this sentence [tam] to Arjuna, [kr`payAviShTam] who was overcome with pity, [ashrupUrNAkulEkShaNam] whose eyes were full of tears: "
+    }], "style": "explnofshloka"
   }
 ]
 
