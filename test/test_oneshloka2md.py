@@ -17,18 +17,17 @@ class MDShlokaTest(unittest.TestCase):
     self.assertTrue(start < end)
     return start, end
 
-two_line_shloka = [    {
-    "chapter": "Chapter 1", "shloka": "1-1",
-    "content": [
-      {"type": "text", "content": "prathama |"}
-    ], "style": "shloka"
-  }, {
-    "chapter": "Chapter 1", "shloka": "1-1",
-    "content": [
-      {"type": "text", "content": "dvitIya ||"}
-    ], "style": "shloka"
-  },
-]
+two_line_shloka = [{
+  "chapter": "Chapter 1", "shloka": "1-1",
+  "content": [
+    {"type": "text", "content": "prathama |"}
+  ], "style": "shloka"
+}, {
+  "chapter": "Chapter 1", "shloka": "1-1",
+  "content": [
+    {"type": "text", "content": "dvitIya ||"}
+  ], "style": "shloka"
+}]
 
 if __name__ == '__main__':
   unittest.main()

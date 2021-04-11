@@ -16,7 +16,7 @@ def expln_to_meanings(explnline):
     if phrase.startswith('['):
       devanagari = translit.gita_to_devanagari(
         phrase.strip().replace('[', '').replace(']', ''))
-      meaningitems.append(f'`{devanagari}` `{phrase}`')
+      meaningitems.append(f'`{devanagari}` `{translit.to_harward_kyoto(phrase)}`')
     else:
       meaningitems.append(phrase.strip())
   return ' '.join(meaningitems)

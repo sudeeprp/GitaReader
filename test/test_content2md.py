@@ -39,5 +39,11 @@ class MDTextTest(unittest.TestCase):
       "explnofshloka")
     self.assertEqual(md, '`अहम्` `[aham]` I `अस्मि` `[asmi]` am')
 
+  def test_translit_is_in_kh(self):
+    md = content_to_md([
+      {"type": "text", "content": "[kr`payAviShTam] who was overcome with pity"}
+    ], "explnofshloka")
+    self.assertEqual(md, '`कृपयाविष्टम्` `[kRpayAviSTam]` who was overcome with pity')
+
 if __name__ == '__main__':
   unittest.main()
