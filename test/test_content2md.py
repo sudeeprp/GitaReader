@@ -22,13 +22,31 @@ class MDTextTest(unittest.TestCase):
       "heading2")
     self.assertEqual(md, '## 2-1 to 2-3')
       
-  def test_only_text_content_in_md(self):
+  def test_unknown_type_not_in_md(self):
     md = content_to_md([
       {"type": "not-text", "content": "donotinclude"},
       {"type": "text", "content": "Chapter 2"}],
       "heading1")
     self.assertNotIn('donotinclude', md)
     self.assertIn('Chapter 2', md)
+
+  def test_anchor_is_placed_in_md(self):
+    md = content_to_md([{"type": "anchor", "name": "_50", "content": "abc"}],
+      "normal")
+    self.assertTrue(md.startswith("<a name='_50'"))
+    self.assertTrue(md.endswith("</a>"))
+    self.assertIn('abc', md)
+
+  def test_extref_in_md_translitted(self):
+    md = content_to_md([{"type": "extref","content": "[buddhiyOga]"}],
+      "normal")
+    self.assertIn('`[buddhiyoga]`', md)
+    self.assertIn('`बुद्धियोग`', md)
+  
+  def test_phrase_in_md_as_reference(self):
+    md = content_to_md([{"type": "phrase","destination": "jnAnI","content": "people who know"}],
+      "normal")
+    self.assertEqual(md, '[people who know](jnAnI)')
 
   def test_doesnt_crash_on_unknown_style(self):
     content_to_md([{"type": "text", "content": "any"}], 'unknown-style')

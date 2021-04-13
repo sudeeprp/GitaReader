@@ -10,7 +10,7 @@ def mdcumulate(para_sequence):
 
   para_groups = groupadja(para_sequence)
   for group in para_groups:
-    cumulate(group['paras'][0]['chapter'], mdtext(group))
+    cumulate(group_title(group), mdtext(group))
   return chapters
 
 def groupadja(para_sequence):
@@ -22,18 +22,50 @@ def groupadja(para_sequence):
       para_groups.append({"style": next["style"], "paras": [next]})
   return para_groups
 
+def group_title(group):
+  first_para = group['paras'][0]
+  shloka_head = first_para['shloka']
+  if shloka_head:
+    return shloka_head
+  else:
+    return first_para['chapter']
+
 def mdtext(group):
   md_texts = [content_to_md(para['content'], group['style'])
     for para in group["paras"]]
   return compose_mds(md_texts, group['style'])
 
 def content_to_md(content, style):
-  texts = [t['content'] for t in content if t['type'] == 'text']
+  text = content_to_text(content)
+  if not text:
+    return ''
   try:
     convert_to_md = style2mdtext[style]
-    return convert_to_md(texts[0])
+    return convert_to_md(text)\
+      .replace('.ltstrt', '[').replace('.ltend', ']')\
+      .replace('.lnstrt', '(').replace('.lnend', ')')
   except KeyError:
     return ''
+  except:
+    print(f'error while processing {content}')
+    raise
+
+type2text = {
+  "text": lambda t: t['content'],
+  "anchor": lambda t: f"<a name='{t['name']}'>{t['content']}</a>",
+  "extref": lambda t: f"{expln_to_meanings(t['content'])}",
+  "phrase": lambda t: f".ltstrt{t['content']}.ltend.lnstrt{t['destination']}.lnend"
+}
+
+def content_to_text(content):
+  combined_text = ''
+  for t in content:
+    typename = t['type']
+    if typename in type2text:
+      combined_text += type2text[typename](t)
+    else:
+      print(f'Warning: ignored type {typename}')
+  return combined_text
 
 def compose_mds(md_texts, style):
   if style in stylecomposer:
@@ -57,8 +89,30 @@ style2mdtext = {
 }
 
 stylecomposer = {
-  ".default": compose_with_newlines,
+  ".default": compose_with_newlines_and_a_gap,
   "heading1": compose_with_newlines_and_a_gap,
   "heading2": compose_with_newlines_and_a_gap,
-  "shloka": compose_with_newlines
+  "shloka": compose_with_newlines,
+  "explnofshloka": compose_with_newlines_and_a_gap
 }
+
+def write_chapters(chapters):
+  toc = '# Table of Contents\n\n'
+  for chaptitle in chapters.keys():
+    if chaptitle:
+      with open(f'mds/{chaptitle}.md', 'w', encoding='utf8') as chapfile:
+        chapfile.write(chapters[chaptitle])
+        toc += f'[{chaptitle}]({chaptitle}.md)\n'
+        print(f'wrote {chaptitle}.md')
+  with open('mds/toc.md', 'w', encoding='utf8') as tocfile:
+    tocfile.write(toc)
+
+if __name__ == '__main__':
+  with open('paras.json', 'r') as para_seq_file:
+    print('parsing...')
+    para_seq = json.load(para_seq_file)["paragraphs"]
+    print(f'got {len(para_seq)} paras. cumulating chapters...')
+    chapters = mdcumulate(para_seq)
+    print('writing...')
+    write_chapters(chapters)
+    print('done.')

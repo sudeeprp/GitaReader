@@ -3,9 +3,9 @@ from gita_md_writer import mdcumulate
 
 class MDShlokaTest(unittest.TestCase):
   def test_shloka_lines_are_merged_in_multiline(self):
-    chapters = mdcumulate(two_line_shloka)
-    first_title = list(chapters.keys())[0]
-    mdlines = chapters[first_title].split('\n')
+    gulpables = mdcumulate(two_line_shloka)
+    first_title = list(gulpables.keys())[0]
+    mdlines = gulpables[first_title].split('\n')
     _, end = self.check_section(mdlines, '```shloka-sa', '```')
     _, end = self.check_section(mdlines, '```shloka-sa-hk', '```', end + 1)
     _, end = self.check_section(mdlines, '```shloka-sa', '```', end + 1)

@@ -18,12 +18,18 @@ class MDChapterTest(unittest.TestCase):
     self.assertEqual(grouped_paras[1]["paras"][0]["para"], "para2")
 
   def test_sample_chapter_written_as_markdown(self):
-    chapters = mdcumulate(sample_chapter_paras)
-    first_title = list(chapters.keys())[0]
-    firstchapmd = chapters[first_title]
+    gulpables = mdcumulate(sample_chapter_paras)
+    first_title = list(gulpables.keys())[0]
+    firstchapmd = gulpables[first_title]
+    self.assertEqual(first_title, "Chapter 2")
+    second_title = list(gulpables.keys())[1]
+    shlokamd = gulpables[second_title]
+    self.assertEqual(second_title, "2-1 to 2-3")
     with open(f'{first_title}.test.md', 'w', encoding='utf8') as mdfile:
       mdfile.write(firstchapmd)
-    print(f'check aesthetics of {first_title}.test.md')
+    with open(f'{second_title}.test.md', 'w', encoding='utf8') as mdfile:
+      mdfile.write(shlokamd)
+    print(f'see aesthetics: {first_title}.test.md and {second_title}.test.md')
 
 sample_chapter_paras = [{
     "chapter": "Chapter 2", "shloka": "",
