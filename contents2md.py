@@ -5,7 +5,7 @@ def shlokaline_to_md(shlokaline):
   bare_shloka = no_sq_encl(shlokaline)
   if not bare_shloka:
     return ''
-    
+
   return f'''```shloka-sa
 {translit.gita_to_devanagari(bare_shloka)}
 ```
@@ -26,3 +26,15 @@ def expln_to_meanings(explnline):
 
 def no_sq_encl(para_text):
   return para_text.strip().replace('[', '').replace(']', '')
+
+appl_number = 0
+def running_appl_number():
+  global appl_number
+  appl_number += 1
+  return appl_number
+
+def backquote_anchor(anchor_prefix):
+  return lambda text: f'''
+<a name='{anchor_prefix}_{running_appl_number()}'></a>
+> {text}
+'''

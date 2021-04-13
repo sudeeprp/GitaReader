@@ -32,6 +32,6 @@ def to_harward_kyoto(gita_transliteration):
 def gita_to_devanagari(gita_transliteration):
     hk_translit = to_harward_kyoto(gita_transliteration)
     devanagari = transliterate(hk_translit, sanscript.HK, sanscript.DEVANAGARI)
-    if re.search(r'[\x00-\x19\x22-\x2C\x2E-\x7F]+', devanagari): # space, !, - allowed
+    if re.search(r'[\x22-\x2C\x2E-\x7F]+', devanagari): # ctrl-chars, space, !, - allowed
         print(f"WARNING: {gita_transliteration} translated to {devanagari}")
     return devanagari

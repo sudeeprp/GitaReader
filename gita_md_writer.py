@@ -1,5 +1,5 @@
 import json
-from contents2md import shlokaline_to_md, expln_to_meanings
+from contents2md import shlokaline_to_md, expln_to_meanings, backquote_anchor
 
 def mdcumulate(para_sequence):
   chapters = {}
@@ -31,9 +31,18 @@ def group_title(group):
     return first_para['chapter']
 
 def mdtext(group):
+  group = merge_contents_in_shloka(group)
   md_texts = [content_to_md(para['content'], group['style'])
     for para in group["paras"]]
   return compose_mds(md_texts, group['style'])
+
+def merge_contents_in_shloka(group):
+  if group['style'] == 'shloka':
+    merged_para = group['paras'][0]
+    for para in group['paras'][1:]:
+      merged_para['content'].extend(para['content'])
+    group['paras'] = [merged_para]
+  return group
 
 def content_to_md(content, style):
   text = content_to_text(content)
@@ -62,7 +71,7 @@ def content_to_text(content):
   for t in content:
     typename = t['type']
     if typename in type2text:
-      combined_text += type2text[typename](t)
+      combined_text += type2text[typename](t) + '\n'
     else:
       print(f'Warning: ignored type {typename}')
   return combined_text
@@ -85,7 +94,9 @@ style2mdtext = {
   "shloka": shlokaline_to_md,
   "heading1": lambda text: f'# {text}',
   "heading2": lambda text: f'## {text}',
-  "explnofshloka": expln_to_meanings
+  "explnofshloka": expln_to_meanings,
+  "applnotes": backquote_anchor('applnote'),
+  "applnotesopener": backquote_anchor('applopener')
 }
 
 stylecomposer = {
@@ -93,7 +104,7 @@ stylecomposer = {
   "heading1": compose_with_newlines_and_a_gap,
   "heading2": compose_with_newlines_and_a_gap,
   "shloka": compose_with_newlines,
-  "explnofshloka": compose_with_newlines_and_a_gap
+  "explnofshloka": compose_with_newlines_and_a_gap,
 }
 
 def write_chapters(chapters):
@@ -102,7 +113,7 @@ def write_chapters(chapters):
     if chaptitle:
       with open(f'mds/{chaptitle}.md', 'w', encoding='utf8') as chapfile:
         chapfile.write(chapters[chaptitle])
-        toc += f'[{chaptitle}]({chaptitle}.md)\n'
+        toc += f'[{chaptitle}]({chaptitle}.md)\n\n'
         print(f'wrote {chaptitle}.md')
   with open('mds/toc.md', 'w', encoding='utf8') as tocfile:
     tocfile.write(toc)

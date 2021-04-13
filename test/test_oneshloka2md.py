@@ -6,16 +6,19 @@ class MDShlokaTest(unittest.TestCase):
     gulpables = mdcumulate(two_line_shloka)
     first_title = list(gulpables.keys())[0]
     mdlines = gulpables[first_title].split('\n')
-    _, end = self.check_section(mdlines, '```shloka-sa', '```')
-    _, end = self.check_section(mdlines, '```shloka-sa-hk', '```', end + 1)
-    _, end = self.check_section(mdlines, '```shloka-sa', '```', end + 1)
-    _, end = self.check_section(mdlines, '```shloka-sa-hk', '```', end + 1)
+    content, end = self.get_section(mdlines, '```shloka-sa', '```')
+    self.assertIn('प्रथम', content)
+    self.assertIn('द्वितीय', content)
+    content, end = self.get_section(mdlines, '```shloka-sa-hk', '```', end + 1)
+    self.assertIn('prathama', content)
+    self.assertIn('dvitIya', content)
 
-  def check_section(self, lines, startline, endline, startindex = 0):
+  def get_section(self, lines, startline, endline, startindex = 0):
     start = lines.index(startline, startindex)
     end = lines.index(endline, startindex)
     self.assertTrue(start < end)
-    return start, end
+    content = '\n'.join(lines[start+1:end])
+    return content, end
 
 two_line_shloka = [{
   "chapter": "Chapter 1", "shloka": "1-1",
